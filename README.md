@@ -2,8 +2,8 @@
 Custom-ControllerAndORM - Java Servlet
 本專案是一個模仿類似 Spring Framework 的 Java Servlet 框架，內容包括了以下功能：
 
-與 Spring 相似的 @RestController、@RequestMapping、@Id、@Transaction等自定義的 Annotation。
-模擬 JPA 的 Entity 操作及交易控制的 @Transactional Annotation。
+與 Spring 相似的 `@RestController` 、 `@RequestMapping` 、 `@Id` 、 `@Transaction`等自定義的 Annotation。
+模擬 JPA 的 Entity 操作及交易控制的 `@Transactional` Annotation。
 
 # 功能說明
 1. RestController - 
