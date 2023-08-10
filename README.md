@@ -5,7 +5,7 @@ Custom-ControllerAndORM - Java Servlet
 與 Spring 相似的 @RestController、@RequestMapping、@Id、@Transaction等自定義的 Annotation。
 模擬 JPA 的 Entity 操作及交易控制的 @Transactional Annotation。
 
-功能說明
+# 功能說明
 RestController
 @MyRestController 可以讓一個 Java 類別變成一個 RESTful 的 Web Service Controller。與 Spring 相似，透過 @RestController 告訴框架，這個類別需要被作為一個 RESTful 的 Web Service Controller 來對外提供服務。
 
