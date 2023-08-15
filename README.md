@@ -18,6 +18,12 @@ Custom-ControllerAndORM - Java Servlet
 4. Transactional -
 `@MyTransactional` 注解實現交易控制，當出現異常時會自動回滾。
 
+# API URL 列表
+* * 查詢全部人員帳號
+```
+emp/query 
+```
+
 # 注意事項：
 在使用自定義的 annotation 時，需要注意命名和使用方式，避免和其他框架的 annotation 重名或混淆。
 在使用 JPA 的 Entity 操作時，需要確保 Entity 和數據庫表的映射正確，否則會報錯。
