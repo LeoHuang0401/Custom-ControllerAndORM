@@ -24,6 +24,21 @@ Custom-ControllerAndORM - Java Servlet
 emp/query 
 ```
 
+- 新增人員帳號
+```
+/emp/insert/{id}
+```
+
+- 刪除指定人員帳號
+```
+/emp/delete/{id}
+```
+
+- 測試insert錯誤時啟動Transaction機制rollback
+```
+/emp/insert/TransactionTest
+```
+
 # 注意事項：
 在使用自定義的 annotation 時，需要注意命名和使用方式，避免和其他框架的 annotation 重名或混淆。
 在使用 JPA 的 Entity 操作時，需要確保 Entity 和數據庫表的映射正確，否則會報錯。
