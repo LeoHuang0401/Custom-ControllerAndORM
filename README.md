@@ -19,7 +19,7 @@ Custom-ControllerAndORM - Java Servlet
 `@MyTransactional` 注解實現交易控制，當出現異常時會自動回滾。
 
 # API URL 列表
-*** 查詢全部人員帳號 ***
+-查詢全部人員帳號
 ```
 emp/query 
 ```
