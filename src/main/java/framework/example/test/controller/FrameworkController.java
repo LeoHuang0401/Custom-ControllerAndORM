@@ -28,7 +28,7 @@ public class FrameworkController {
     /*
      * 總查詢以及指定查詢
      */
-	@MyRequestMapping("emp/query")
+	@MyRequestMapping("/emp/query")
 	public void findAll(HttpServletRequest request, HttpServletResponse response) {
 	    EntityManager em = new EntityManager();
 	    System.out.println("findAll#start");
