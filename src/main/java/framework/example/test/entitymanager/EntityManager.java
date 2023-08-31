@@ -193,7 +193,7 @@ public class EntityManager {
         String tableName = "";
         if (c.getAnnotation(MyEntity.class) != null && c.getAnnotation(MyTable.class) != null) {
             MyTable table = c.getAnnotation(MyTable.class);
-            tableName = table.value();
+            tableName = table.name();
         }
         return tableName;
     }

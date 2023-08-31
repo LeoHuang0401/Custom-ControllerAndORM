@@ -1,7 +1,11 @@
 package framework.example.test.entity;
 
+import framework.example.test.annotation.MyEntity;
 import framework.example.test.annotation.MyId;
+import framework.example.test.annotation.MyTable;
 
+@MyEntity
+@MyTable(name = "Employee")
 public class Employee {
 
     @MyId
