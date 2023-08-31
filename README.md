@@ -21,23 +21,30 @@ Custom-ControllerAndORM - Java Servlet
 # API URL 列表
 - 查詢全部人員帳號
 ```
-emp/query 
+/emp/query 
 ```
+```
+/emp/query?id={id}
+```
+EntityManager -> findAll()
 
-- 新增人員帳號
+- 新增、修改人員帳號
 ```
 /emp/insert/{id}
 ```
+EntityManager -> save()
 
 - 刪除指定人員帳號
 ```
 /emp/delete/{id}
 ```
+EntityManager -> delete()
 
 - 測試insert錯誤時啟動Transaction機制rollback
 ```
 /emp/insert/TransactionTest
 ```
+EntityManager -> save()
 
 # 注意事項：
 在使用自定義的 annotation 時，需要注意命名和使用方式，避免和其他框架的 annotation 重名或混淆。
