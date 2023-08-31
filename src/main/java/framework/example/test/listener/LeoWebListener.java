@@ -45,7 +45,10 @@ public class LeoWebListener implements ServletContextListener{
         
     }
 
-
+    /**
+     * 掃描路徑檔案
+     * @param rootDirectoryPath
+     */
     public void scanPackage(String rootDirectoryPath) {
         // 將路徑轉換成
         URL url = getClass().getClassLoader().getResource("/" + rootDirectoryPath.replaceAll("\\.", "/"));
@@ -66,17 +69,22 @@ public class LeoWebListener implements ServletContextListener{
         }
     }
     
+    /**
+     * 掃描Annotation
+     */
     public void scanAnnotation() {
         CLASS_PATH.forEach(path -> {
             try {
                 Class<?> clazz = Class.forName(path.replace(".class", ""));
                 if (clazz.isAnnotationPresent(MyRestController.class)) {
+                    // class
                     MyRequestMapping reqMapping = clazz.getAnnotation(MyRequestMapping.class);
                     String clazzPath = "";
                     if(reqMapping != null) {
                         clazzPath = reqMapping.value();
                     }
-
+                    
+                    // method
                     Method[] method = clazz.getDeclaredMethods();
                     for (Method mt : method) {
                         if (mt.isAnnotationPresent(MyRequestMapping.class)) {

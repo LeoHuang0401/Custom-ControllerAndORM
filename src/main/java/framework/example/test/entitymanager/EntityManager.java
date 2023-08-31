@@ -1,10 +1,8 @@
 package framework.example.test.entitymanager;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -12,71 +10,79 @@ import java.util.ArrayList;
 import java.util.List;
 
 import framework.example.test.DBUtils;
+import framework.example.test.annotation.MyEntity;
 import framework.example.test.annotation.MyId;
+import framework.example.test.annotation.MyTable;
 
 public class EntityManager {
 
-//    public static ThreadLocal<Connection> pools = new ThreadLocal<>() ;
-//    
-//    public Connection getConnection() {
-//        
-//        Connection conn = pools.get();
-//        if (conn == null) {
-//            try {
-//                System.out.println("連線池為空，建立新的連線");
-//                Class.forName("oracle.jdbc.OracleDriver");
-//                conn = DriverManager.getConnection("jdbc:oracle:thin:@//61.216.84.220:1534/XE", "DEMO", "123456");
-//                System.out.println("連線成功");
-//                pools.set(conn);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }else {
-//            System.out.println("連線池已有連線");
-//        }
-//        return conn;
-//    }
-    
+    /**
+     * 查詢全部或查詢指定ID
+     * @param <T>
+     * @param t (要執行的Entity)
+     * @param id (pk)
+     * @return 
+     */
     public <T> List<T> findAll(Class<T> t,String id){
+        String tableName = checkEntity(t);
         List<T> dataList = new ArrayList<>();
         Connection conn = DBUtils.getConnection();
         String sql = "";
         Field[] fields = t.getDeclaredFields();
-        sql = "SELECT * FROM " + t.getSimpleName().toUpperCase();
+        sql = "SELECT * FROM " + tableName.toUpperCase();
         try {
             if (id != null) {
                 System.out.println("ID為=>" + id);
                 for (Field fld : fields) {
+                    // pk
                     if (fld.isAnnotationPresent(MyId.class)) {
                         System.out.println("註解=> " + fld.getName());
-                        sql = "SELECT * FROM " + t.getSimpleName().toUpperCase() + " WHERE " + fld.getName().toUpperCase() + " = " + id;
+                        sql = getSelectSql(tableName, fld, id);
                     }
                 }
             }
-            entity(t, dataList, sql, conn);
+            selectPk(t, dataList, sql, conn);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return dataList;
     }
     
+    /**
+     * 新增修改
+     * @param <T>
+     * @param t (要執行的Entity)
+     * @param o (新增或修改的物件)
+     * @return 
+     * @throws Exception
+     */
     public <T> String save(Class<T> t,Object o) throws Exception {
+        String tableName = checkEntity(t);
         List<T> dataList = new ArrayList<>();
         Connection conn = DBUtils.getConnection();
+        // update 
+        // 欄位名稱
         String name = "";
-        String message = "";
-        Field[] fields = t.getDeclaredFields();
-        String selectSql = "";
-        String sql = "UPDATE " + t.getSimpleName() + " SET ";
+        String sql = "UPDATE " + tableName + " SET ";
+        // update 欄位
         String updateSql = "";
+        // where 條件
         String finalSql = "";
-        String insertSql = "INSERT INTO " + t.getSimpleName() + " ( ";
+        // pk
+        String selectSql = "";
+        // insert
+        String insertSql = "INSERT INTO " + tableName + " ( ";
+        // return message
+        String message = "";
         List<String> val = new ArrayList();
         
         Statement stmt = conn.createStatement();
+        Field[] fields = t.getDeclaredFields();
         for (Field fld : fields) {
             String mtName = fld.getName().substring(0, 1).toUpperCase() + fld.getName().substring(1);
+            // get欄位方法
             Method mt = t.getDeclaredMethod("get" + mtName);
+            // 取得欄位值
             String value = mt.invoke(o).toString();
             name = fld.getName().toUpperCase();
             updateSql = sql += name + "=" + "'" + value + "'" + ",";
@@ -84,51 +90,47 @@ public class EntityManager {
             val.add(value);
             if (fld.isAnnotationPresent(MyId.class)) {
                 System.out.println("註解=> " + fld.getName());
-                selectSql = "SELECT * FROM " + t.getSimpleName().toUpperCase() + " WHERE " + fld.getName().toUpperCase()
-                        + " = " + value;
+                selectSql = getSelectSql(tableName, fld, value);
                 finalSql = " WHERE " + fld.getName().toUpperCase() + " = " + value;
             }
         }
-        List<T> list = entity(t, dataList, selectSql, conn);
-        System.out.println("list => " + list);
+        // 查詢是否有這筆資料 有則update 無則insert
+        List<T> list = selectPk(t, dataList, selectSql, conn);
         if (list.isEmpty()) {
-            String sql1 = insertSql.substring(0, insertSql.length() - 1);
-            sql1 += " ) VALUES (";
-            for (String value : val) {
-                sql1 += "'" + value + "' ,";
-            }
-            String finalInsertSql = sql1.substring(0, sql1.length() - 1);
-            finalInsertSql += ")";
-            System.out.println("finalInsertSql => " + finalInsertSql);
-            stmt.executeUpdate(finalInsertSql);
+            doInsert(insertSql, val, stmt);
             message = "新增成功";
         } else if(!list.isEmpty()){
-            System.out.println("finalUpdateSql => " + updateSql.substring(0, updateSql.length() - 1) + finalSql);
-            stmt.executeUpdate(updateSql.substring(0, updateSql.length() - 1) + finalSql);
+            doUpdate(updateSql, finalSql, stmt);
             message = "修改完成";
         }
-        System.out.println("message => " + message);
         return message;
     }
     
+    /**
+     * 刪除指定ID資料
+     * @param <T>
+     * @param t (要執行的Entity)
+     * @param id (pk)
+     * @return
+     * @throws Exception
+     */
     public <T> String delete(Class<T> t,String id) throws Exception {
+        String tableName = checkEntity(t);
         List<T> dataList = new ArrayList<>();
         Connection conn = DBUtils.getConnection();
         String message = "";
-        Field[] fields = t.getDeclaredFields();
         String selectSql = "";
         String deleteSql = "DELETE FROM " + t.getSimpleName() + " WHERE ";
         Statement stmt = conn.createStatement();
+        Field[] fields = t.getDeclaredFields();
         for (Field fld : fields) {
             if (fld.isAnnotationPresent(MyId.class)) {
                 System.out.println("註解=> " + fld.getName());
-                selectSql = "SELECT * FROM " + t.getSimpleName().toUpperCase() + " WHERE " + fld.getName().toUpperCase()
-                        + " = " + id;
+                selectSql = getSelectSql(tableName, fld, id);
                 deleteSql += fld.getName();
             }
         }
-        List<T> list = entity(t, dataList, selectSql, conn);
-        System.out.println("list => " + list);
+        List<T> list = selectPk(t, dataList, selectSql, conn);
         if (list == null || list.isEmpty()) {
             message = "查無此ID";
             return message;
@@ -145,7 +147,68 @@ public class EntityManager {
         return message;
     }
     
-    public <T> List<T> entity(Class<T> t,List<T> list,String sql,Connection conn) throws Exception{
+    /**
+     * 執行update語法
+     * @param updateSql
+     * @param finalSql
+     * @param stmt
+     * @throws SQLException
+     */
+    public void doUpdate(String updateSql, String finalSql, Statement stmt) throws SQLException  {
+        System.out.println("finalUpdateSql => " + updateSql.substring(0, updateSql.length() - 1) + finalSql);
+        stmt.executeUpdate(updateSql.substring(0, updateSql.length() - 1) + finalSql);
+    }
+    
+    /**
+     * 執行insert語法
+     * @param insertSql
+     * @param val
+     * @param stmt
+     * @throws SQLException
+     */
+    public void doInsert(String insertSql, List<String> val,  Statement stmt) throws SQLException  {
+        String sql1 = insertSql.substring(0, insertSql.length() - 1);
+        sql1 += " ) VALUES (";
+        for (String value : val) {
+            sql1 += "'" + value + "' ,";
+        }
+        String finalInsertSql = sql1.substring(0, sql1.length() - 1);
+        finalInsertSql += ")";
+        System.out.println("finalInsertSql => " + finalInsertSql);
+        stmt.executeUpdate(finalInsertSql);
+    }
+    
+    /**
+     * 取得查詢指定ID資料的SelectSQL
+     * @param tableName
+     * @param fld
+     * @param value
+     * @return
+     */
+    public String getSelectSql(String tableName, Field fld, String value) {
+        return "SELECT * FROM " + tableName.toUpperCase() + " WHERE " + fld.getName().toUpperCase() + " = " + value;
+    }
+    
+    public <T> String checkEntity(Class<T> c) {
+        String tableName = "";
+        if (c.getAnnotation(MyEntity.class) != null && c.getAnnotation(MyTable.class) != null) {
+            MyTable table = c.getAnnotation(MyTable.class);
+            tableName = table.value();
+        }
+        return tableName;
+    }
+    
+    /**
+     * 執行查詢語法Select SQL
+     * @param <T>
+     * @param t
+     * @param list
+     * @param sql
+     * @param conn
+     * @return
+     * @throws Exception
+     */
+    public <T> List<T> selectPk(Class<T> t,List<T> list,String sql,Connection conn) throws Exception{
         Field[] fields = t.getDeclaredFields();
         System.out.println("sql=> " + sql);
         Statement stmt = conn.createStatement();

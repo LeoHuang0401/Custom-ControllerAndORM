@@ -18,14 +18,6 @@ import framework.example.test.entitymanager.EntityManager;
 public class FrameworkController {
 
     /*
-     * 測試用
-     */
-//	@MyRequestMapping("/1234/123")
-//	public void query(HttpServletRequest req) {
-//		System.out.println("query#start" + req.getParameter("name"));
-//	}
-	
-    /*
      * 總查詢以及指定查詢
      */
 	@MyRequestMapping("/emp/query")
