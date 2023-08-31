@@ -23,6 +23,7 @@ Custom-ControllerAndORM - Java Servlet
 ```
 /emp/query 
 ```
+****
 ```
 /emp/query?id={id}
 ```
