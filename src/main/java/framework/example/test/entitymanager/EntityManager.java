@@ -1,5 +1,6 @@
 package framework.example.test.entitymanager;
 
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -9,13 +10,16 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import framework.example.test.DBUtils;
+import framework.example.test.annotation.MyComponent;
 import framework.example.test.annotation.MyEntity;
 import framework.example.test.annotation.MyId;
 import framework.example.test.annotation.MyTable;
 
+@MyComponent
 public class EntityManager {
-
+    
     /**
      * 查詢全部或查詢指定ID
      * @param <T>
@@ -189,6 +193,12 @@ public class EntityManager {
         return "SELECT * FROM " + tableName.toUpperCase() + " WHERE " + fld.getName().toUpperCase() + " = " + value;
     }
     
+    /**
+     * 查詢@Entity、@MyTable - TableName
+     * @param <T>
+     * @param c
+     * @return
+     */
     public <T> String checkEntity(Class<T> c) {
         String tableName = "";
         if (c.getAnnotation(MyEntity.class) != null && c.getAnnotation(MyTable.class) != null) {

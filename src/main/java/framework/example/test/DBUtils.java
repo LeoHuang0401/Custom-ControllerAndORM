@@ -15,7 +15,7 @@ public static ThreadLocal<Connection> pools = new ThreadLocal<>() ;
             try {
                 System.out.println("連線池為空，建立新的連線");
                 Class.forName("oracle.jdbc.OracleDriver");
-                conn = DriverManager.getConnection("", "", "");
+                conn = DriverManager.getConnection("jdbc:oracle:thin:@//61.216.84.217:1534/ORCL", "DEMO", "123456");
                 System.out.println("連線成功");
                 pools.set(conn);
             } catch (Exception e) {

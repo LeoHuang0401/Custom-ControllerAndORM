@@ -1,6 +1,7 @@
 package framework.example.test.listener;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
@@ -8,13 +9,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
+import framework.example.test.annotation.MyAutowired;
+import framework.example.test.annotation.MyComponent;
 import framework.example.test.annotation.MyRequestMapping;
 import framework.example.test.annotation.MyRestController;
+import framework.example.test.annotation.MyService;
+import framework.example.test.exception.UrlException;
+import framework.example.test.utils.StringUtil;
 
 @WebListener
 public class LeoWebListener implements ServletContextListener{
@@ -28,6 +33,10 @@ public class LeoWebListener implements ServletContextListener{
      */
     public static final List<String> CLASS_PATH = new ArrayList<>();
     /**
+     * 路徑存放區
+     */
+    public static final Map<String,Object> IOC_MAP = new HashMap<>();
+    /**
      * 存放有註解的class
      */
     public static final Map<String,Method> METHOD_MAP = new HashMap<>();
@@ -36,8 +45,12 @@ public class LeoWebListener implements ServletContextListener{
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         // 掃描根目錄
         scanPackage(ROOT_DIRECTORY_PATH);
-        // 掃描annotation
+        // 掃描controller、service
         scanAnnotation();
+        // 注入Autowired
+        initAutowired();
+        // 掃描MyRestContoller
+        scanControllerAnnotation();
     }
     
     @Override
@@ -49,7 +62,8 @@ public class LeoWebListener implements ServletContextListener{
      * 掃描路徑檔案
      * @param rootDirectoryPath
      */
-    public void scanPackage(String rootDirectoryPath) {
+    private void scanPackage(String rootDirectoryPath) {
+        System.out.println("scanPackage#start");
         // 將路徑轉換成
         URL url = getClass().getClassLoader().getResource("/" + rootDirectoryPath.replaceAll("\\.", "/"));
         
@@ -70,12 +84,67 @@ public class LeoWebListener implements ServletContextListener{
     }
     
     /**
-     * 掃描Annotation
+     * 掃描MyRestController、MyService
      */
-    public void scanAnnotation() {
-        CLASS_PATH.forEach(path -> {
+    private void scanAnnotation() {
+        System.out.println("scanAnnotation#start");
+        CLASS_PATH.forEach(claz -> {
             try {
-                Class<?> clazz = Class.forName(path.replace(".class", ""));
+                Class<?> clazz = Class.forName(claz.replace(".class", ""));
+                
+                if (clazz.isAnnotationPresent(MyComponent.class)) {
+                    IOC_MAP.put(StringUtil.lowerFirstCase(clazz.getSimpleName()), clazz.getDeclaredConstructor().newInstance());
+                }else if (clazz.isAnnotationPresent(MyRestController.class) || clazz.isAnnotationPresent(MyService.class)) {
+                    IOC_MAP.put(StringUtil.lowerFirstCase(clazz.getSimpleName()), clazz.getDeclaredConstructor().newInstance());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+    
+    /**
+     * 掃描MyAutowired(Annotation)
+     */
+    private void initAutowired() {
+        System.out.println("initAutowired#start");
+        IOC_MAP.forEach((k,v) -> {
+            try {
+                Class<?> clazz = v.getClass();
+                if (clazz.isAnnotationPresent(MyRestController.class) || clazz.isAnnotationPresent(MyService.class)) {
+                    Field[] fields = clazz.getDeclaredFields();
+                    
+                    for (Field field : fields) {
+                        if (field.isAnnotationPresent(MyAutowired.class)) {
+                            // 獲取依賴注入註解
+                            MyAutowired autowired = field.getAnnotation(MyAutowired.class);
+                            String beanName = autowired.value();
+                            if ("".equals(beanName)) {
+                                beanName = StringUtil.lowerFirstCase(field.getType().getSimpleName());
+                            }
+                            //開啟 private權限
+                            field.setAccessible(true);
+                            Object beanClass = IOC_MAP.get(beanName);
+                            if (beanClass != null) {
+                                field.set(v, beanClass);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+    
+    /**
+     * 掃描MyRestController(Annotation)
+     */
+    private void scanControllerAnnotation() {
+        System.out.println("scanControllerAnnotation#start");
+        IOC_MAP.forEach((k,v) -> {
+            try {
+                Class<?> clazz = v.getClass();
                 if (clazz.isAnnotationPresent(MyRestController.class)) {
                     // class
                     MyRequestMapping reqMapping = clazz.getAnnotation(MyRequestMapping.class);
@@ -89,12 +158,17 @@ public class LeoWebListener implements ServletContextListener{
                     for (Method mt : method) {
                         if (mt.isAnnotationPresent(MyRequestMapping.class)) {
                             MyRequestMapping myReq = mt.getAnnotation(MyRequestMapping.class);
-                            String myRequsetStr = myReq.value();
-                            METHOD_MAP.put(clazzPath + myRequsetStr, mt);
+                            String myRequestStr = myReq.value();
+                            String path = clazzPath + myRequestStr;
+                            if (METHOD_MAP.get(path) != null) {
+                                throw new UrlException("UrlException :" + clazz.getSimpleName() + "-(" + myRequestStr + ") is repeated");
+                            }else {
+                                METHOD_MAP.put(path, mt);
+                            }
                         }
                     }
                 }
-            } catch (ClassNotFoundException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });

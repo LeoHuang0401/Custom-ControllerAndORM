@@ -1,6 +1,6 @@
 package framework.example.test.controller;
 
-
+import static framework.example.test.listener.LeoWebListener.IOC_MAP;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -8,15 +8,19 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import framework.example.test.annotation.MyAutowired;
 import framework.example.test.annotation.MyRequestMapping;
 import framework.example.test.annotation.MyRestController;
-import framework.example.test.annotation.MyTransaction;
+import framework.example.test.annotation.MyTransactional;
 import framework.example.test.entity.Employee;
 import framework.example.test.entitymanager.EntityManager;
 
 @MyRestController
 public class FrameworkController {
-
+    
+    @MyAutowired
+    EntityManager entityManager;
+    
     /*
      * 總查詢以及指定查詢
      */
@@ -28,7 +32,7 @@ public class FrameworkController {
 	        String id = request.getParameter("id");
 	        System.out.println("ID=> " + id);
 	        PrintWriter pwt = response.getWriter();
-	        List<Employee> list = em.findAll(Employee.class,id);
+	        List<Employee> list = entityManager.findAll(Employee.class,id);
 	        if(list.isEmpty()) {
 	            pwt.write("ID not found");
 	        }else {
@@ -58,8 +62,7 @@ public class FrameworkController {
         entity.setIden("LeoTest");
         entity.setUsername("Leo123");
         entity.setPassword("Leo123456");
-        EntityManager em = new EntityManager();
-        String message = em.save(Employee.class, entity);
+        String message = entityManager.save(Employee.class, entity);
         resMessage(response, message);
     }
 	
@@ -76,8 +79,7 @@ public class FrameworkController {
         entity.setIden("LeoUPDATE");
         entity.setUsername("Leo321");
         entity.setPassword("Leo654321");
-        EntityManager em = new EntityManager();
-        String message = em.save(Employee.class, entity);
+        String message = entityManager.save(Employee.class, entity);
         resMessage(response, message);
 	}
 	
@@ -88,15 +90,14 @@ public class FrameworkController {
 	public void delete(HttpServletRequest request,HttpServletResponse response) throws Exception{
         System.out.println("delete#start 刪除的id=> " + request.getParameter("id"));
         String id = request.getParameter("id");
-        EntityManager em = new EntityManager();
-        String message = em.delete(Employee.class, id);
+        String message = entityManager.delete(Employee.class, id);
         resMessage(response,message);
 	}
 	
 	/*
 	 * 交易控制
 	 */
-	@MyTransaction
+	@MyTransactional
 	@MyRequestMapping("/emp/insert/TransactionTest")
 	public void transactionTest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 	    Employee entity1 = new Employee();
@@ -105,8 +106,7 @@ public class FrameworkController {
 	    entity1.setIden("leo33123");
 	    entity1.setUsername("leo33123");
 	    entity1.setPassword("leo123456");
-        EntityManager em = new EntityManager();
-        em.save(Employee.class,entity1);
+	    entityManager.save(Employee.class,entity1);
         
         Employee entity2 = new Employee();
         // 設定相關屬性值
@@ -114,7 +114,7 @@ public class FrameworkController {
         entity2.setIden("leo33123");
         entity2.setUsername("leo33123");
         entity2.setPassword("leo123456");
-        em.save(Employee.class,entity2);
+        entityManager.save(Employee.class,entity2);
 	}
 	
 	public void resMessage(HttpServletResponse response,String message) {
