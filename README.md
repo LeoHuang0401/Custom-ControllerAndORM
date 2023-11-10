@@ -2,8 +2,8 @@
 Custom-ControllerAndORM - Java Servlet
 本專案是一個模仿類似 Spring Framework 的 Java Servlet 框架，內容包括了以下功能：
 
-與 Spring 相似的 `@RestController` 、 `@RequestMapping` 、 `@Id` 、 `@Transaction`等自定義的 Annotation。
-模擬 JPA 的 Entity 操作及交易控制的 `@Transactional` Annotation。
+與 Spring 相似的 `@RestController` 、 `@RequestMapping` 、`@Service` 、`@Component` 、`@Entity` 、`@Table` 、`@Autowired`、 `@Id` 、 `@Transaction`等自定義的 Annotation。
+模擬 JPA 的 `@Entity` 操作及交易控制的 `@Transactional` Annotation。
 
 # 功能說明
 1. RestController - 
@@ -12,16 +12,25 @@ Custom-ControllerAndORM - Java Servlet
 2. RequestMapping -
 `@MyRequestMapping` 可以指定一個 URL，透過這個 URL 可以呼叫指定的 Controller 方法。與 Spring 相似，可以指定 URL 路徑、HTTP 方法、Content-Type 等等。
 
-3. Entity - 
+3. Service - 
+`@MyService` 定義新的服務實現，並在啟動過程中將它們自動檢測為Spring Bean。
+
+4. Component -
+`@MyComponent` 掃描我們的應用程序以查找帶有@Component 、實例化它們並將任何指定的依賴項注入到它們中、隨時隨地註入。
+
+5. Autowired -
+`MyAutowired` 自動裝配指的就是使用將Spring容器中的bean自動的和我們需要這個bean的類組裝在一起。
+
+6. Entity - 
 `@MyEntity` 使用自定義的注解Entity來模擬JPA的實體操作。
 
-4. Table - 
+7. Table - 
 `@MyTable` 參數name來對應資料表的TableName。
 
-5. Id -
+8. Id -
 `@MyId` 是屬性或方法級別的註解，該註解沒有參數，用於標註焦點的主鍵（映射到數據庫表的主鍵）。
 
-6. Transactional -
+9. Transactional -
 `@MyTransactional` 注解實現交易控制，當出現異常時會自動回滾。
 
 # API URL 列表
