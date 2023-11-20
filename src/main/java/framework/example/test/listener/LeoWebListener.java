@@ -15,10 +15,13 @@ import javax.servlet.annotation.WebListener;
 
 import framework.example.test.annotation.MyAutowired;
 import framework.example.test.annotation.MyComponent;
+import framework.example.test.annotation.MyController;
 import framework.example.test.annotation.MyRequestMapping;
 import framework.example.test.annotation.MyRestController;
 import framework.example.test.annotation.MyService;
+import framework.example.test.annotation.MyValue;
 import framework.example.test.exception.UrlException;
+import framework.example.test.utils.ConfigPropUtil;
 import framework.example.test.utils.StringUtil;
 
 @WebListener
@@ -94,7 +97,7 @@ public class LeoWebListener implements ServletContextListener{
                 
                 if (clazz.isAnnotationPresent(MyComponent.class)) {
                     IOC_MAP.put(StringUtil.lowerFirstCase(clazz.getSimpleName()), clazz.getDeclaredConstructor().newInstance());
-                }else if (clazz.isAnnotationPresent(MyRestController.class) || clazz.isAnnotationPresent(MyService.class)) {
+                }else if (clazz.isAnnotationPresent(MyController.class) || clazz.isAnnotationPresent(MyRestController.class) || clazz.isAnnotationPresent(MyService.class)) {
                     IOC_MAP.put(StringUtil.lowerFirstCase(clazz.getSimpleName()), clazz.getDeclaredConstructor().newInstance());
                 }
             } catch (Exception e) {
@@ -111,10 +114,23 @@ public class LeoWebListener implements ServletContextListener{
         IOC_MAP.forEach((k,v) -> {
             try {
                 Class<?> clazz = v.getClass();
-                if (clazz.isAnnotationPresent(MyRestController.class) || clazz.isAnnotationPresent(MyService.class)) {
+                if (clazz.isAnnotationPresent(MyComponent.class) || clazz.isAnnotationPresent(MyController.class) 
+                        || clazz.isAnnotationPresent(MyRestController.class) || clazz.isAnnotationPresent(MyService.class)) {
                     Field[] fields = clazz.getDeclaredFields();
-                    
                     for (Field field : fields) {
+                        if (field.isAnnotationPresent(MyValue.class)) {
+                            // 獲取依賴注入註解
+                            MyValue myValue = field.getAnnotation(MyValue.class);
+                            String key = myValue.value();
+                            
+                            //開啟 private權限
+                            field.setAccessible(true);
+                            Object val = ConfigPropUtil.getPropertiesData(ROOT_DIRECTORY_PATH, key);
+                            if (val != null) {
+                                field.set(v, val);
+                            }
+                        }
+                        
                         if (field.isAnnotationPresent(MyAutowired.class)) {
                             // 獲取依賴注入註解
                             MyAutowired autowired = field.getAnnotation(MyAutowired.class);
@@ -145,7 +161,7 @@ public class LeoWebListener implements ServletContextListener{
         IOC_MAP.forEach((k,v) -> {
             try {
                 Class<?> clazz = v.getClass();
-                if (clazz.isAnnotationPresent(MyRestController.class)) {
+                if (clazz.isAnnotationPresent(MyRestController.class) || clazz.isAnnotationPresent(MyController.class)) {
                     // class
                     MyRequestMapping reqMapping = clazz.getAnnotation(MyRequestMapping.class);
                     String clazzPath = "";

@@ -1,5 +1,6 @@
 package framework.example.test.entity;
 
+import framework.example.test.annotation.MyColumn;
 import framework.example.test.annotation.MyEntity;
 import framework.example.test.annotation.MyId;
 import framework.example.test.annotation.MyTable;
@@ -9,20 +10,23 @@ import framework.example.test.annotation.MyTable;
 public class Employee {
 
     @MyId
-    private String id;
+    @MyColumn(name = "id")
+    private String idTest;
     
     private String iden;
     
-    private String username ;
+    @MyColumn(name = "username")
+    private String user ;
     
-    private String password ;
+    @MyColumn(name = "password")
+    private String pwd ;
 
-    public String getId() {
-        return id;
+    public String getIdTest() {
+        return idTest;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setIdTest(String idTest) {
+        this.idTest = idTest;
     }
 
     public String getIden() {
@@ -33,20 +37,20 @@ public class Employee {
         this.iden = iden;
     }
 
-    public String getUsername() {
-        return username;
+    public String getUser() {
+        return user;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUser(String user) {
+        this.user = user;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPwd() {
+        return pwd;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPwd(String pwd) {
+        this.pwd = pwd;
     }
-    
+
 }

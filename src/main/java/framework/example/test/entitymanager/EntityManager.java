@@ -10,8 +10,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import framework.example.test.DBUtils;
+import framework.example.test.annotation.MyAutowired;
+import framework.example.test.annotation.MyColumn;
 import framework.example.test.annotation.MyComponent;
 import framework.example.test.annotation.MyEntity;
 import framework.example.test.annotation.MyId;
@@ -19,6 +20,9 @@ import framework.example.test.annotation.MyTable;
 
 @MyComponent
 public class EntityManager {
+    
+    @MyAutowired
+    private DBUtils dbUtils;
     
     /**
      * 查詢全部或查詢指定ID
@@ -30,7 +34,7 @@ public class EntityManager {
     public <T> List<T> findAll(Class<T> t,String id){
         String tableName = checkEntity(t);
         List<T> dataList = new ArrayList<>();
-        Connection conn = DBUtils.getConnection();
+        Connection conn = dbUtils.getConnection();
         String sql = "";
         Field[] fields = t.getDeclaredFields();
         sql = "SELECT * FROM " + tableName.toUpperCase();
@@ -63,7 +67,7 @@ public class EntityManager {
     public <T> String save(Class<T> t,Object o) throws Exception {
         String tableName = checkEntity(t);
         List<T> dataList = new ArrayList<>();
-        Connection conn = DBUtils.getConnection();
+        Connection conn = dbUtils.getConnection();
         // update 
         // 欄位名稱
         String name = "";
@@ -85,17 +89,25 @@ public class EntityManager {
         for (Field fld : fields) {
             String mtName = fld.getName().substring(0, 1).toUpperCase() + fld.getName().substring(1);
             // get欄位方法
+            System.out.println("mtName => " + mtName);
             Method mt = t.getDeclaredMethod("get" + mtName);
             // 取得欄位值
             String value = mt.invoke(o).toString();
-            name = fld.getName().toUpperCase();
-            updateSql = sql += name + "=" + "'" + value + "'" + ",";
-            insertSql += name + ",";
+            name = fld.getName();
+            if (fld.isAnnotationPresent(MyColumn.class)) {
+                name = fld.getAnnotation(MyColumn.class).name();
+            }
+            updateSql = sql += name.toUpperCase() + "=" + "'" + value + "'" + ",";
+            insertSql += name.toUpperCase() + ",";
             val.add(value);
             if (fld.isAnnotationPresent(MyId.class)) {
                 System.out.println("註解=> " + fld.getName());
                 selectSql = getSelectSql(tableName, fld, value);
-                finalSql = " WHERE " + fld.getName().toUpperCase() + " = " + value;
+                String fldName = fld.getName();
+                if (fld.isAnnotationPresent(MyColumn.class)) {
+                    fldName = fld.getAnnotation(MyColumn.class).name();
+                }
+                finalSql = " WHERE " + fldName.toUpperCase() + " = " + value;
             }
         }
         // 查詢是否有這筆資料 有則update 無則insert
@@ -121,7 +133,7 @@ public class EntityManager {
     public <T> String delete(Class<T> t,String id) throws Exception {
         String tableName = checkEntity(t);
         List<T> dataList = new ArrayList<>();
-        Connection conn = DBUtils.getConnection();
+        Connection conn = dbUtils.getConnection();
         String message = "";
         String selectSql = "";
         String deleteSql = "DELETE FROM " + t.getSimpleName() + " WHERE ";
@@ -131,7 +143,11 @@ public class EntityManager {
             if (fld.isAnnotationPresent(MyId.class)) {
                 System.out.println("註解=> " + fld.getName());
                 selectSql = getSelectSql(tableName, fld, id);
-                deleteSql += fld.getName();
+                String fldName = fld.getName();
+                if (fld.isAnnotationPresent(MyColumn.class)) {
+                    fldName = fld.getAnnotation(MyColumn.class).name();
+                }
+                deleteSql += fldName;
             }
         }
         List<T> list = selectPk(t, dataList, selectSql, conn);
@@ -190,7 +206,13 @@ public class EntityManager {
      * @return
      */
     public String getSelectSql(String tableName, Field fld, String value) {
-        return "SELECT * FROM " + tableName.toUpperCase() + " WHERE " + fld.getName().toUpperCase() + " = " + value;
+        String fldName = fld.getName();
+        if (fld.isAnnotationPresent(MyColumn.class)) {
+            MyColumn column = fld.getAnnotation(MyColumn.class);
+            fldName = column.name();
+        }
+        String sql = "SELECT * FROM " + tableName.toUpperCase() + " WHERE " + fldName.toUpperCase() + " = " + value;
+        return sql;
     }
     
     /**
@@ -228,7 +250,11 @@ public class EntityManager {
             for (Field fld : fields) {
                 String name = fld.getName().substring(0, 1).toUpperCase() + fld.getName().substring(1);
                 Method mt = t.getDeclaredMethod("set" + name, fld.getType());
-                mt.invoke(entity, rs.getString(fld.getName()));
+                String fldName = fld.getName();
+                if (fld.isAnnotationPresent(MyColumn.class)) {
+                    fldName = fld.getAnnotation(MyColumn.class).name();
+                }
+                mt.invoke(entity, rs.getString(fldName));
             }
             list.add(entity);
         }

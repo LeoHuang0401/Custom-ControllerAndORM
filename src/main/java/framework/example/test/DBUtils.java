@@ -4,18 +4,35 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class DBUtils {
+import framework.example.test.annotation.MyComponent;
+import framework.example.test.annotation.MyValue;
 
-public static ThreadLocal<Connection> pools = new ThreadLocal<>() ;
+@MyComponent
+public class DBUtils {
     
-    public static Connection getConnection() {
+    @MyValue("db.driver.class")
+    private String driverClass;
+    
+    @MyValue("db.url")
+    private String url;
+    
+    @MyValue("db.user")
+    private String user;
+    
+    @MyValue("db.pwd")
+    private String pwd;
+
+public final ThreadLocal<Connection> pools = new ThreadLocal<>() ;
+    
+    public Connection getConnection() {
         
         Connection conn = pools.get();
         if (conn == null) {
             try {
                 System.out.println("連線池為空，建立新的連線");
-                Class.forName("oracle.jdbc.OracleDriver");
-                conn = DriverManager.getConnection("jdbc:oracle:thin:@//61.216.84.217:1534/ORCL", "DEMO", "123456");
+                Class.forName(driverClass);
+                conn = DriverManager.getConnection(url, user, pwd);
+                conn.setAutoCommit(false);
                 System.out.println("連線成功");
                 pools.set(conn);
             } catch (Exception e) {
@@ -27,7 +44,7 @@ public static ThreadLocal<Connection> pools = new ThreadLocal<>() ;
         return conn;
     }
     
-    public static void closeConn(Connection conn) {
+    public void closeConn(Connection conn) {
         try {
             if(conn != null) {
                 conn.close();

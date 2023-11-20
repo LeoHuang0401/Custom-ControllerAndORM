@@ -12,46 +12,32 @@ Custom-ControllerAndORM - Java Servlet
 2. RequestMapping -
 `@MyRequestMapping` 可以指定一個 URL，透過這個 URL 可以呼叫指定的 Controller 方法。與 Spring 相似，可以指定 URL 路徑、HTTP 方法、Content-Type 等等。
 
-3. Entity - 
-`@MyEntity` 使用自定義的注解Entity來模擬JPA的實體操作。
+3. Id -
+`@MyId` 是屬性或方法級別的註解，該註解沒有參數，用於標註焦點的主鍵（映射到數據庫表的主鍵）
 
-4. Table - 
-`@MyTable` 參數name來對應資料表的TableName。
-
-5. Id -
-`@MyId` 是屬性或方法級別的註解，該註解沒有參數，用於標註焦點的主鍵（映射到數據庫表的主鍵）。
-
-6. Transactional -
+4. Transactional -
 `@MyTransactional` 注解實現交易控制，當出現異常時會自動回滾。
 
 # API URL 列表
 - 查詢全部人員帳號
 ```
-/emp/query 
+emp/query 
 ```
-****
-```
-/emp/query?id={id}
-```
--> EntityManager - findAll()
 
-- 新增、修改人員帳號
+- 新增人員帳號
 ```
 /emp/insert/{id}
 ```
--> EntityManager -> save()
 
 - 刪除指定人員帳號
 ```
 /emp/delete/{id}
 ```
--> EntityManager -> delete()
 
 - 測試insert錯誤時啟動Transaction機制rollback
 ```
 /emp/insert/TransactionTest
 ```
--> EntityManager -> save()
 
 # 注意事項：
 在使用自定義的 annotation 時，需要注意命名和使用方式，避免和其他框架的 annotation 重名或混淆。

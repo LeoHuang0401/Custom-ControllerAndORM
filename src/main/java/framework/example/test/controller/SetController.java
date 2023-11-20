@@ -36,10 +36,10 @@ public class SetController {
                 pwt.write("ID not found");
             }else {
                 for(Employee emp : list) {
-                    pwt.write("ID       =>" + emp.getId() + "\n");
+                    pwt.write("ID       =>" + emp.getIdTest() + "\n");
                     pwt.write("IDEN     =>" + emp.getIden() + "\n");
-                    pwt.write("USERNAME =>" + emp.getUsername() + "\n");
-                    pwt.write("PASSWORD =>" + emp.getPassword() + "\n");
+                    pwt.write("USERNAME =>" + emp.getUser() + "\n");
+                    pwt.write("PASSWORD =>" + emp.getPwd() + "\n");
                 }
             }
             pwt.close();
