@@ -19,7 +19,7 @@ Custom-ControllerAndORM - Java Servlet
 `@MyComponent` 掃描我們的應用程序以查找帶有@Component 、實例化它們並將任何指定的依賴項注入到它們中、隨時隨地註入。
 
 5. Autowired -
-`MyAutowired` 自動裝配指的就是使用將Spring容器中的bean自動的和我們需要這個bean的類組裝在一起。
+`@MyAutowired` 自動裝配指的就是使用將Spring容器中的bean自動的和我們需要這個bean的類組裝在一起。
 
 6. Entity - 
 `@MyEntity` 使用自定義的注解Entity來模擬JPA的實體操作。
