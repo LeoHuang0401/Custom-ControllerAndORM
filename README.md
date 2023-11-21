@@ -30,7 +30,22 @@ Custom-ControllerAndORM - Java Servlet
 8. Id -
 `@MyId` 是屬性或方法級別的註解，該註解沒有參數，用於標註焦點的主鍵（映射到數據庫表的主鍵）。
 
-9. Transactional -
+9. Value - 
+`@MyValue`  Spring框架中的一个常用功能,其作用是通過註解將常量、配置文件中的值、其他bean的属性值注入到變量中，作爲變量的初始值。
+
+10. Controller -
+`@MyController` 作用是將用戶提交來的請求通過URL匹配，分發給不同的接收器（具體的Controller），該接收器會對其進行相應處理，然後返回處理結果。
+
+11. Column -
+`MYColumn` 對應到 Table 的欄位中的欄位名稱。
+
+12. RequestParam -
+`@RequestParam` 是Spring Framework 框架中的註解，用於將請求中的參數綁定到方法的參數。
+
+13. RequestBody -
+`@RequestBody` 主要用來接收前端使用POST傳給後端的json字串中的資料。
+
+14. Transactional -
 `@MyTransactional` 注解實現交易控制，當出現異常時會自動回滾。
 
 # API URL 列表
