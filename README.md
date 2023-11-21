@@ -37,7 +37,7 @@ Custom-ControllerAndORM - Java Servlet
 `@MyController` 作用是將用戶提交來的請求通過URL匹配，分發給不同的接收器（具體的Controller），該接收器會對其進行相應處理，然後返回處理結果。
 
 11. Column -
-`MYColumn` 對應到 Table 的欄位中的欄位名稱。
+`@MYColumn` 對應到 Table 的欄位中的欄位名稱。
 
 12. RequestParam -
 `@RequestParam` 是Spring Framework 框架中的註解，用於將請求中的參數綁定到方法的參數。
